@@ -21,7 +21,7 @@ jobs:
             echo "run_crawl=true" >> "$GITHUB_OUTPUT"
           else
             echo "NEP MIG is not current."
-            echo "run_crawl=true" >> "$GITHUB_OUTPUT"
+            echo "run_crawl=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Set up R
