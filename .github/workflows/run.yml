@@ -1,0 +1,60 @@
+name: Post NEP MIG to Slack
+
+on: 
+   workflow_dispatch:
+   schedule:
+     - cron: "55 23 * * *"
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check latest NEP MIG issue date
+        id: check_date
+        run: |
+          page_content=$(curl -s https://nep.repec.org/nep-mig/latest)
+          today=$(date +%F)
+          expected_title="nep-mig $today papers"
+
+          if echo "$page_content" | grep -qF "$expected_title"; then
+            echo "NEP MIG is current."
+            echo "run_crawl=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "NEP MIG is not current."
+            echo "run_crawl=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up R
+        if: steps.check_date.outputs.run_crawl == 'true'
+        uses: r-lib/actions/setup-r@v2
+
+      - name: Install packages
+        if: steps.check_date.outputs.run_crawl == 'true'
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::httr 
+            any::jsonlite
+            any::rvest
+
+      - name: Check out repository
+        if: steps.check_date.outputs.run_crawl == 'true'
+        uses: actions/checkout@v4
+        with:
+          path: main_folder
+          ref: main
+
+      - name: Create and populate credentials file with secrets
+        if: steps.check_date.outputs.run_crawl == 'true'
+        working-directory: ./main_folder
+        run: |
+          echo '.slack_workflow_trigger_url="'"$MAPPED_SLACK_WEBHOOK"'"' >> credentials.R
+        shell: bash
+        env:
+          MAPPED_SLACK_WEBHOOK : ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Get data and produce JSON
+        if: steps.check_date.outputs.run_crawl == 'true'
+        working-directory: ./main_folder
+        run: |
+          Rscript run.R
