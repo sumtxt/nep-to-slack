@@ -13,12 +13,12 @@ jobs:
         id: check_date
         run: |
           page_content=$(curl -s https://nep.repec.org/nep-mig/latest)
-          today=$(date +%F)
-          expected_title="nep-mig $today papers"
+          today=$(date +%F | sed 's/-/‒/g')  # U+2012
+          pattern="^$today at"
 
-          if echo "$page_content" | grep -qF "$expected_title"; then
+          if echo "$page_content" | grep -zPq "$pattern"; then
             echo "NEP MIG is current."
-            echo "run_crawl=true" >> "$GITHUB_OUTPUT"
+            echo "run_crawl=false" >> "$GITHUB_OUTPUT"
           else
             echo "NEP MIG is not current."
             echo "run_crawl=false" >> "$GITHUB_OUTPUT"
