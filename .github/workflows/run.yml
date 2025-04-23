@@ -12,7 +12,7 @@ jobs:
       - name: Check latest NEP MIG issue date
         id: check_date
         run: |
-          page_content=$(curl -s https://nep.repec.org/nep-mig/latest)
+          page_content=$(curl -s https://nep.repec.org/nep-mig/2025-04-21)
           today=$(date +%F | sed 's/-/‒/g')  # U+2012
           pattern="^$today at"
 
