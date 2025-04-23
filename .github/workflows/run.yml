@@ -12,7 +12,7 @@ jobs:
       - name: Check latest NEP MIG issue date
         id: check_date
         run: |
-          page_content=$(curl -s https://nep.repec.org/nep-mig/2025-04-21)
+          page_content=$(curl -s https://nep.repec.org/nep-mig/latest)
           today=$(date +%F | sed 's/-/‒/g')  # U+2012
           pattern="$today at"
 
@@ -21,7 +21,7 @@ jobs:
             echo "run_crawl=false" >> "$GITHUB_OUTPUT"
           else
             echo "NEP MIG is not current."
-            echo "run_crawl=false" >> "$GITHUB_OUTPUT"
+            echo "run_crawl=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Set up R
