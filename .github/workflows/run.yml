@@ -14,7 +14,7 @@ jobs:
         run: |
           page_content=$(curl -s https://nep.repec.org/nep-mig/2025-04-21)
           today=$(date +%F | sed 's/-/‒/g')  # U+2012
-          pattern="^$today at"
+          pattern="$today at"
 
           if echo "$page_content" | grep -zPq "$pattern"; then
             echo "NEP MIG is current."
