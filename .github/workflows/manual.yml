@@ -1,3 +1,5 @@
+name: NEP MIG to Slack (manual)
+
 on: 
   workflow_dispatch:
 

@@ -1,4 +1,4 @@
-name: Post NEP MIG to Slack
+name: NEP MIG to Slack (timed)
 
 on: 
    workflow_dispatch:
