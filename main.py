@@ -1,7 +1,7 @@
 import os
 import sys
 
-from nep import fetch, deduplicate, save_urls, post_to_slack
+from nep import fetch, deduplicate, post_to_slack
 
 MEMORY_FILE = "memory/url.txt"
 
@@ -30,11 +30,8 @@ def main() -> None:
         print("Nothing to post.")
         return
 
-    post_to_slack(new_papers, webhook_url)
-
-    new_urls = [p["url"] for p in new_papers]
-    save_urls(new_urls, MEMORY_FILE)
-    print(f"Saved {len(new_urls)} URLs to memory.")
+    post_to_slack(new_papers, webhook_url, MEMORY_FILE)
+    print(f"Posted {len(new_papers)} papers.")
 
 
 if __name__ == "__main__":

@@ -17,6 +17,8 @@ on:
 jobs:
   crawl:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -31,13 +33,6 @@ jobs:
       - name: Install dependencies
         run: pip install requests beautifulsoup4
 
-      - name: Restore memory file
-        uses: actions/cache@v4
-        with:
-          path: memory/url.txt
-          key: nep-memory-${{ github.event.inputs.nep_name || 'nep-mig' }}
-          restore-keys: nep-memory-${{ github.event.inputs.nep_name || 'nep-mig' }}
-
       - name: Fetch and post papers
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
@@ -45,8 +40,10 @@ jobs:
           SKIP_DEDUP: ${{ github.event.inputs.skip_dedup || 'false' }}
         run: python main.py
 
-      - name: Save memory file
-        uses: actions/cache/save@v4
-        with:
-          path: memory/url.txt
-          key: nep-memory-${{ github.event.inputs.nep_name || 'nep-mig' }}-${{ github.run_id }}
+      - name: Commit memory file
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add memory/url.txt
+          git diff --cached --quiet || git commit -m "update memory file [skip ci]"
+          git push

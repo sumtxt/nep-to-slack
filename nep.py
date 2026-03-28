@@ -78,10 +78,16 @@ def deduplicate(papers: list[dict], memory_file: str = MEMORY_FILE) -> list[dict
 def post_to_slack(
     papers: list[dict],
     webhook_url: str,
+    memory_file: str = MEMORY_FILE,
     wait_seconds: int = 2,
     rate_limit: int = 10,
 ) -> None:
-    """Post papers to Slack, respecting rate limits."""
+    """Post papers to Slack, respecting rate limits.
+
+    Saves each URL to the memory file immediately after a successful post
+    so that a mid-run failure does not cause already-posted papers to be
+    posted again on the next run.
+    """
     n = len(papers)
     start = time.time()
 
@@ -91,6 +97,8 @@ def post_to_slack(
 
         if resp.status_code != 200 or not resp.json().get("ok"):
             raise RuntimeError(f"Slack error {resp.status_code}: {resp.text!r}")
+
+        save_urls([paper["url"]], memory_file)
 
         if i % rate_limit == 0:
             elapsed = time.time() - start
