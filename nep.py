@@ -135,7 +135,6 @@ def classify_paper(paper: dict, prompt: str, api_key: str, model: str = "gpt-4o-
             {"role": "system", "content": system_message},
             {"role": "user", "content": user_message},
         ],
-        max_tokens=10,
         temperature=0,
     )
 
