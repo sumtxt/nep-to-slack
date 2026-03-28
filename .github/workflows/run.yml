@@ -1,60 +1,52 @@
-name: NEP MIG to Slack (timed)
+name: NEP to Slack
 
-on: 
-   workflow_dispatch:
-   schedule:
-     - cron: "55 23 * * *"
+on:
+  workflow_dispatch:
+    inputs:
+      nep_name:
+        description: "NEP identifier (e.g. nep-mig)"
+        required: false
+        default: "nep-mig"
+      skip_dedup:
+        description: "Skip deduplication and post all papers"
+        required: false
+        default: "false"
+  schedule:
+    - cron: "55 23 * * *"
 
 jobs:
   crawl:
     runs-on: ubuntu-latest
     steps:
-      - name: Check latest NEP MIG issue date
-        id: check_date
-        run: |
-          page_content=$(curl -s https://nep.repec.org/nep-mig/latest)
-          today=$(date +%F | sed 's/-/‒/g')  # U+2012
-          pattern="$today at"
-
-          if echo "$page_content" | grep -zPq "$pattern"; then
-            echo "NEP MIG is current."
-            echo "run_crawl=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "NEP MIG is not current."
-            echo "run_crawl=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Set up R
-        if: steps.check_date.outputs.run_crawl == 'true'
-        uses: r-lib/actions/setup-r@v2
-
-      - name: Install packages
-        if: steps.check_date.outputs.run_crawl == 'true'
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          packages: |
-            any::httr 
-            any::jsonlite
-            any::rvest
-
       - name: Check out repository
-        if: steps.check_date.outputs.run_crawl == 'true'
         uses: actions/checkout@v4
         with:
-          path: main_folder
           ref: main
 
-      - name: Create and populate credentials file with secrets
-        if: steps.check_date.outputs.run_crawl == 'true'
-        working-directory: ./main_folder
-        run: |
-          echo '.slack_workflow_trigger_url="'"$MAPPED_SLACK_WEBHOOK"'"' >> credentials.R
-        shell: bash
-        env:
-          MAPPED_SLACK_WEBHOOK : ${{ secrets.SLACK_WEBHOOK }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-      - name: Get data and produce JSON
-        if: steps.check_date.outputs.run_crawl == 'true'
-        working-directory: ./main_folder
-        run: |
-          Rscript run.R
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Restore memory file
+        uses: actions/cache@v4
+        with:
+          path: memory/url.txt
+          key: nep-memory-${{ github.event.inputs.nep_name || 'nep-mig' }}
+          restore-keys: nep-memory-${{ github.event.inputs.nep_name || 'nep-mig' }}
+
+      - name: Fetch and post papers
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          NEP_NAME: ${{ github.event.inputs.nep_name || 'nep-mig' }}
+          SKIP_DEDUP: ${{ github.event.inputs.skip_dedup || 'false' }}
+        run: python main.py
+
+      - name: Save memory file
+        uses: actions/cache/save@v4
+        with:
+          path: memory/url.txt
+          key: nep-memory-${{ github.event.inputs.nep_name || 'nep-mig' }}-${{ github.run_id }}

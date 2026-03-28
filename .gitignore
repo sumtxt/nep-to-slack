@@ -1,4 +1,6 @@
 .DS_Store
 _site
 ToDo.txt
-credentials.R
+memory/url.txt
+.claude
+.devcontainer

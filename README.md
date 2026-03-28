@@ -1,6 +1,18 @@
-NEP to Slack Tool
-===================
+NEP to Slack
+============
 
-This simple tool automates the process of fetching the latest issue of [NEP: New Economics Papers](https://nep.repec.org/) and posts the papers to a Slack channel via a workflow webhook. The script checks NEP every day at 23:50 UTC for new issues.
+Fetches the latest issue of a [NEP: New Economics Papers](https://nep.repec.org/) report and posts each paper to a Slack channel via a workflow webhook. Runs daily at 23:55 UTC. Papers are deduplicated against a memory file so nothing is posted twice.
 
-To use this tool for your own Slack, clone this repository and navigate to Security > Secrets and Variables > Actions. Set the SLACK_WEBHOOK as a repository secret with your webhook.
+## Setup
+
+1. Clone this repository.
+2. Go to **Settings → Secrets and Variables → Actions** and add `SLACK_WEBHOOK` as a repository secret.
+
+## Running manually
+
+Trigger the workflow from **Actions → NEP to Slack → Run workflow**. Available inputs:
+
+| Input | Default | Description |
+|---|---|---|
+| `nep_name` | `nep-mig` | NEP report identifier (e.g. `nep-env`, `nep-lab`) |
+| `skip_dedup` | `false` | Set to `true` to post all papers regardless of memory |
