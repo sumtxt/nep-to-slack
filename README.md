@@ -22,8 +22,15 @@ Go to **Settings → Secrets and Variables → Actions** and add the following r
 
 ### nep-ecm workflow
 
+**Secrets:**
+
 | Secret | Description |
 |---|---|
 | `SLACK_WEBHOOK_ECM` | Slack webhook URL for nep-ecm papers |
 | `OPENAI_API_KEY` | OpenAI API key for classification |
+
+**Variables:**
+
+| Variable | Description |
+|---|---|
 | `CLASSIFIER_PROMPT_ECM` | Prompt for the classifier |
