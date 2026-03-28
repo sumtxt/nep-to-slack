@@ -11,6 +11,10 @@ on:
         description: "Skip deduplication and post all papers"
         required: false
         default: "false"
+      skip_classifier:
+        description: "Skip OpenAI classifier"
+        required: false
+        default: "true"
   schedule:
     - cron: "55 23 * * *"
 
@@ -31,19 +35,22 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install requests beautifulsoup4
+        run: pip install requests beautifulsoup4 openai
 
       - name: Fetch and post papers
         env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          NEP_NAME: ${{ github.event.inputs.nep_name || 'nep-mig' }}
-          SKIP_DEDUP: ${{ github.event.inputs.skip_dedup || 'false' }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_MIG }}
+          NEP_NAME: ${{ github.event.inputs.nep_name }}
+          SKIP_DEDUP: ${{ github.event.inputs.skip_dedup }}
+          SKIP_CLASSIFIER: ${{ github.event.inputs.skip_classifier }}
         run: python main.py
 
       - name: Commit memory file
+        env:
+          NEP_NAME: ${{ github.event.inputs.nep_name }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add memory/url.txt
+          git add "memory/${NEP_NAME}.txt"
           git diff --cached --quiet || git commit -m "update memory file [skip ci]"
           git push

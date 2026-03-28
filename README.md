@@ -1,18 +1,29 @@
 NEP to Slack
 ============
 
-Fetches the latest issue of a [NEP: New Economics Papers](https://nep.repec.org/) report and posts each paper to a Slack channel via a workflow webhook. Runs daily at 23:55 UTC. Papers are deduplicated against a memory file so nothing is posted twice.
+Fetches the latest issue of a [NEP: New Economics Papers](https://nep.repec.org/) report and posts each paper to a Slack channel via a workflow webhook. Runs daily. Papers are deduplicated against a memory file (one per NEP report, e.g., `memory/nep-mig.txt`) so nothing is posted twice. Optionally, papers can be filtered using an OpenAI LLM classifier to only post papers relevant to a specific research area. Papers rejected by the classifier are still saved to the memory file to avoid re-evaluating them on subsequent runs.
+
+## Workflows
+
+There are two GitHub Actions workflows:
+
+1. **nep-mig** - Posts papers from the NEP Migration report without classification
+2. **nep-ecm** - Posts papers from the NEP Econometrics report with OpenAI classification
 
 ## Setup
 
-1. Clone this repository.
-2. Go to **Settings → Secrets and Variables → Actions** and add `SLACK_WEBHOOK` as a repository secret.
+Go to **Settings → Secrets and Variables → Actions** and add the following repository secrets:
 
-## Running manually
+### nep-mig workflow
 
-Trigger the workflow from **Actions → NEP to Slack → Run workflow**. Available inputs:
+| Secret | Description |
+|---|---|
+| `SLACK_WEBHOOK_MIG` | Slack webhook URL for nep-mig papers |
 
-| Input | Default | Description |
-|---|---|---|
-| `nep_name` | `nep-mig` | NEP report identifier (e.g. `nep-env`, `nep-lab`) |
-| `skip_dedup` | `false` | Set to `true` to post all papers regardless of memory |
+### nep-ecm workflow
+
+| Secret | Description |
+|---|---|
+| `SLACK_WEBHOOK_ECM` | Slack webhook URL for nep-ecm papers |
+| `OPENAI_API_KEY` | OpenAI API key for classification |
+| `CLASSIFIER_PROMPT_ECM` | Prompt for the classifier |

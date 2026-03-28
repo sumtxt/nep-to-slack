@@ -4,6 +4,7 @@ import time
 
 import requests
 from bs4 import BeautifulSoup, Tag
+from openai import OpenAI
 
 RATE_LIMIT_WINDOW_SECONDS = 60
 MEMORY_FILE = "memory/url.txt"
@@ -108,3 +109,66 @@ def post_to_slack(
             time.sleep(wait_seconds)
 
     print()
+
+
+def classify_paper(paper: dict, prompt: str, api_key: str, model: str = "gpt-4o-mini") -> bool:
+    """Classify a paper using an LLM to check if it matches the research area.
+
+    Args:
+        paper: Paper dict with title, authors, abstract, etc.
+        prompt: User-defined prompt describing the research area of interest.
+        api_key: OpenAI API key.
+        model: OpenAI model to use (default: gpt-4o-mini).
+
+    Returns:
+        True if the paper is relevant, False otherwise.
+    """
+    client = OpenAI(api_key=api_key)
+
+    system_message = prompt
+
+    user_message = f"""Paper to classify: Title: {paper['title']} Abstract: {paper['abstract']} """
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": user_message},
+        ],
+        max_tokens=10,
+        temperature=0,
+    )
+
+    answer = response.choices[0].message.content.strip().upper()
+    return answer == "YES"
+
+
+def classify_papers(
+    papers: list[dict],
+    prompt: str,
+    api_key: str,
+    model: str = "gpt-4o-mini",
+) -> list[dict]:
+    """Filter papers based on LLM classification.
+
+    Args:
+        papers: List of paper dicts.
+        prompt: User-defined prompt describing the research area of interest.
+        api_key: OpenAI API key.
+        model: OpenAI model to use.
+
+    Returns:
+        List of papers that match the research area.
+    """
+    relevant = []
+    for paper in papers:
+        try:
+            if classify_paper(paper, prompt, api_key, model):
+                relevant.append(paper)
+                print(f"  [RELEVANT] {paper['title'][:60]}...")
+            else:
+                print(f"  [SKIPPED] {paper['title'][:60]}...")
+        except Exception as e:
+            print(f"  [ERROR] {paper['title'][:60]}... - {e}")
+            relevant.append(paper)
+    return relevant

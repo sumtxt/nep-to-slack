@@ -1,0 +1,63 @@
+name: NEP to Slack
+
+on:
+  workflow_dispatch:
+    inputs:
+      nep_name:
+        description: "NEP identifier (e.g. nep-mig)"
+        required: false
+        default: "nep-ecm"
+      skip_dedup:
+        description: "Skip deduplication and post all papers"
+        required: false
+        default: "false"
+      skip_classifier:
+        description: "Skip OpenAI classifier"
+        required: false
+        default: "false"
+      openai_model:
+        description: "OpenAI model for classification"
+        required: false
+        default: "gpt-5.4-nano"
+  schedule:
+    - cron: "55 7 * * *"
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 openai
+
+      - name: Fetch and post papers
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_ECM }}
+          NEP_NAME: ${{ github.event.inputs.nep_name }}
+          SKIP_DEDUP: ${{ github.event.inputs.skip_dedup }}
+          SKIP_CLASSIFIER: ${{ github.event.inputs.skip_classifier }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CLASSIFIER_PROMPT: ${{ secrets.CLASSIFIER_PROMPT_ECM }}
+          OPENAI_MODEL: ${{ github.event.inputs.openai_model }}
+        run: python main.py
+
+      - name: Commit memory file
+        env:
+          NEP_NAME: ${{ github.event.inputs.nep_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "memory/${NEP_NAME}.txt"
+          git diff --cached --quiet || git commit -m "update memory file [skip ci]"
+          git push
