@@ -1,6 +1,3 @@
 .DS_Store
-_site
-ToDo.txt
-memory/url.txt
 .claude
-.devcontainer
+.devcontainers

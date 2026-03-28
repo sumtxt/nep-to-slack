@@ -89,7 +89,7 @@ def post_to_slack(
         print(".", end="", flush=True)
         resp = requests.post(webhook_url, json=paper, timeout=10)
 
-        if resp.status_code != 200 or resp.text.strip() != "ok":
+        if resp.status_code != 200 or not resp.json().get("ok"):
             raise RuntimeError(f"Slack error {resp.status_code}: {resp.text!r}")
 
         if i % rate_limit == 0:
