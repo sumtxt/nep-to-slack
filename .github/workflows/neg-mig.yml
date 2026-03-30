@@ -40,14 +40,14 @@ jobs:
       - name: Fetch and post papers
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_MIG }}
-          NEP_NAME: ${{ github.event.inputs.nep_name }}
-          SKIP_DEDUP: ${{ github.event.inputs.skip_dedup }}
-          SKIP_CLASSIFIER: ${{ github.event.inputs.skip_classifier }}
+          NEP_NAME: ${{ github.event.inputs.nep_name || 'nep-mig' }}
+          SKIP_DEDUP: ${{ github.event.inputs.skip_dedup || 'false' }}
+          SKIP_CLASSIFIER: ${{ github.event.inputs.skip_classifier || 'true' }}
         run: python main.py
 
       - name: Commit memory file
         env:
-          NEP_NAME: ${{ github.event.inputs.nep_name }}
+          NEP_NAME: ${{ github.event.inputs.nep_name || 'nep-mig' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
