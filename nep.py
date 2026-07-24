@@ -111,19 +111,19 @@ def post_to_slack(
     print()
 
 
-def classify_paper(paper: dict, prompt: str, api_key: str, model: str = "gpt-4o-mini") -> bool:
+def classify_paper(paper: dict, prompt: str, api_key: str, model: str = "openai/gpt-4o-mini") -> bool:
     """Classify a paper using an LLM to check if it matches the research area.
 
     Args:
         paper: Paper dict with title, authors, abstract, etc.
         prompt: User-defined prompt describing the research area of interest.
-        api_key: OpenAI API key.
-        model: OpenAI model to use (default: gpt-4o-mini).
+        api_key: OpenRouter API key.
+        model: OpenRouter model to use (default: openai/gpt-4o-mini).
 
     Returns:
         True if the paper is relevant, False otherwise.
     """
-    client = OpenAI(api_key=api_key)
+    client = OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")
 
     system_message = prompt
 
@@ -146,15 +146,15 @@ def classify_papers(
     papers: list[dict],
     prompt: str,
     api_key: str,
-    model: str = "gpt-4o-mini",
+    model: str = "openai/gpt-4o-mini",
 ) -> list[dict]:
     """Filter papers based on LLM classification.
 
     Args:
         papers: List of paper dicts.
         prompt: User-defined prompt describing the research area of interest.
-        api_key: OpenAI API key.
-        model: OpenAI model to use.
+        api_key: OpenRouter API key.
+        model: OpenRouter model to use.
 
     Returns:
         List of papers that match the research area.

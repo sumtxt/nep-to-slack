@@ -12,13 +12,13 @@ on:
         required: false
         default: "false"
       skip_classifier:
-        description: "Skip OpenAI classifier"
+        description: "Skip OpenRouter classifier"
         required: false
         default: "false"
-      openai_model:
-        description: "OpenAI model for classification"
+      openrouter_model:
+        description: "OpenRouter model for classification"
         required: false
-        default: "gpt-5.4-nano"
+        default: "openai/gpt-4o-mini"
   schedule:
     - cron: "55 7 * * *"
 
@@ -47,9 +47,9 @@ jobs:
           NEP_NAME: ${{ github.event.inputs.nep_name || 'nep-ecm' }}
           SKIP_DEDUP: ${{ github.event.inputs.skip_dedup || 'false' }}
           SKIP_CLASSIFIER: ${{ github.event.inputs.skip_classifier || 'false' }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           CLASSIFIER_PROMPT: ${{ vars.CLASSIFIER_PROMPT_ECM }}
-          OPENAI_MODEL: ${{ github.event.inputs.openai_model || 'gpt-5.4-nano' }}
+          OPENROUTER_MODEL: ${{ github.event.inputs.openrouter_model || 'openai/gpt-4o-mini' }}
         run: python main.py
 
       - name: Commit memory file

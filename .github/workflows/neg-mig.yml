@@ -12,7 +12,7 @@ on:
         required: false
         default: "false"
       skip_classifier:
-        description: "Skip OpenAI classifier"
+        description: "Skip OpenRouter classifier"
         required: false
         default: "true"
   schedule:
