@@ -9,9 +9,9 @@ def main() -> None:
     webhook_url = os.environ.get("SLACK_WEBHOOK")
     skip_dedup = os.environ.get("SKIP_DEDUP", "").lower() == "true"
     skip_classifier = os.environ.get("SKIP_CLASSIFIER", "").lower() == "true"
-    openai_api_key = os.environ.get("OPENAI_API_KEY")
+    openrouter_api_key = os.environ.get("OPENROUTER_API_KEY")
     classifier_prompt = os.environ.get("CLASSIFIER_PROMPT")
-    openai_model = os.environ.get("OPENAI_MODEL")
+    openrouter_model = os.environ.get("OPENROUTER_MODEL")
 
     memory_file = f"memory/{nep_name}.txt"
 
@@ -37,25 +37,25 @@ def main() -> None:
         return
 
     if not skip_classifier:
-        if not openai_api_key:
-            sys.exit("OPENAI_API_KEY environment variable is not set but classifier is enabled.")
+        if not openrouter_api_key:
+            sys.exit("OPENROUTER_API_KEY environment variable is not set but classifier is enabled.")
         if not classifier_prompt:
             sys.exit("CLASSIFIER_PROMPT environment variable is not set but classifier is enabled.")
-        if not openai_model:
-            sys.exit("OPENAI_MODEL environment variable is not set but classifier is enabled.")
+        if not openrouter_model:
+            sys.exit("OPENROUTER_MODEL environment variable is not set but classifier is enabled.")
 
-        print(f"Classifying papers with {openai_model}...")
+        print(f"Classifying papers with {openrouter_model}...")
         # Save all deduplicated URLs to memory before classification
         # This ensures skipped papers won't be re-evaluated next run
         save_urls([p["url"] for p in new_papers], memory_file)
-        new_papers = classify_papers(new_papers, classifier_prompt, openai_api_key, openai_model)
+        new_papers = classify_papers(new_papers, classifier_prompt, openrouter_api_key, openrouter_model)
         print(f"{len(new_papers)} relevant papers after classification.")
 
         if not new_papers:
             print("No relevant papers to post.")
             return
     else:
-        print("OpenAI classifier skipped.")
+        print("OpenRouter classifier skipped.")
 
     post_to_slack(new_papers, webhook_url, memory_file)
     print(f"Posted {len(new_papers)} papers.")
